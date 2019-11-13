@@ -1,10 +1,12 @@
 import React from 'react';
-import Liked from './liked';
 import Pagination from './pagination';
 import ListGroup from './listGroup';
+import MoviesTable from './moviesTable';
 import { getMovies } from '../services/fakeMovieService';
 import { paginate } from '../utils/paginate';
 import { getGenres } from '../services/fakeGenreService';
+
+import _ from 'lodash';
 
 class Movies extends React.Component {
     state = {
@@ -12,7 +14,8 @@ class Movies extends React.Component {
         currentPage: 1,
         pageSize: 4,
         genres: [],
-        selectedGenre: null
+        selectedGenre: null,
+        sortColumn: { path: 'title', order: 'asc' }
     }
 
     componentDidMount() {
@@ -55,6 +58,19 @@ class Movies extends React.Component {
         this.setState({ selectedGenre: genre, currentPage: 1 });
     }
 
+    handleSort = path => {
+        const sortColumn = { ...this.state.sortColumn };
+        if (sortColumn.path === path) {
+            sortColumn.order = (sortColumn.order === 'asc' ? 'desc' : 'asc');
+        } else {
+            sortColumn.path = path;
+            sortColumn.order = 'asc';
+        }
+
+        // update the state
+        this.setState({ sortColumn });
+    }
+
     render() {
         // if there are no movies print this message
         if (this.state.movies.length === 0) {
@@ -63,8 +79,10 @@ class Movies extends React.Component {
 
         // if genre hasnt been selected render all the movies, if has been then filter out movies that are different genre than we selected
         const filtered = this.state.selectedGenre && this.state.selectedGenre._id ? this.state.movies.filter(m => m.genre._id === this.state.selectedGenre._id) : this.state.movies;
+
+        const sorted = _.orderBy(filtered, [this.state.sortColumn.path], [this.state.sortColumn.order]);
         // use pagination
-        const movies = paginate(filtered, this.state.currentPage, this.state.pageSize);
+        const movies = paginate(sorted, this.state.currentPage, this.state.pageSize);
 
         // otherwise print the whole table
         return (
@@ -78,32 +96,11 @@ class Movies extends React.Component {
                 </div>
                 <div className='col'>
                     <p>There are {filtered.length} movies in the database.</p>
-                    <table className='table'>
-                        <thead>
-                            <tr>
-                                <th scope='col'>Title</th>
-                                <th scope='col'>Genre</th>
-                                <th scope='col'>Stock</th>
-                                <th scope='col'>Rate</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {/* loop through the movies and transform each movie into a row of bunch information */}
-                            {movies.map(movie => {
-                                return (
-                                    <tr key={movie._id}>
-                                        <th scope='row'>{movie.title}</th>
-                                        <td>{movie.genre.name}</td>
-                                        <td>{movie.numberInStock}</td>
-                                        <td>{movie.dailyRentalRate}</td>
-                                        <td><Liked onLike={this.handleLike} liked={movie.liked} movie={movie} /></td>
-                                        <td><button onClick={() => this.handleMovieDelete(movie._id)}>Delete</button></td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                    <MoviesTable movies={movies}
+                        onDelete={this.handleMovieDelete}
+                        onLike={this.handleLike}
+                        onSort={this.handleSort} />
+
                     <Pagination itemsCount={filtered.length}
                         pageSize={this.state.pageSize}
                         onPageChange={this.handlePageChange}
