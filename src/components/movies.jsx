@@ -64,18 +64,25 @@ class Movies extends React.Component {
         this.setState({ sortColumn });
     }
 
+    getPagedData = () => {
+        const { pageSize, currentPage, sortColumn, selectedGenre, movies: allMovies } = this.state;
+        // if genre hasnt been selected render all the movies, if has been then filter out movies that are different genre than we selected
+        const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id) : allMovies;
+
+        const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+        // use pagination
+        const movies = paginate(sorted, currentPage, pageSize);
+
+        return { totalCount: filtered.length, data: movies };
+    }
+
     render() {
         // if there are no movies print this message
         if (this.state.movies.length === 0) {
             return <p>There are no movies in our database.</p>
         }
 
-        // if genre hasnt been selected render all the movies, if has been then filter out movies that are different genre than we selected
-        const filtered = this.state.selectedGenre && this.state.selectedGenre._id ? this.state.movies.filter(m => m.genre._id === this.state.selectedGenre._id) : this.state.movies;
-
-        const sorted = _.orderBy(filtered, [this.state.sortColumn.path], [this.state.sortColumn.order]);
-        // use pagination
-        const movies = paginate(sorted, this.state.currentPage, this.state.pageSize);
+        const { totalCount, data: movies } = this.getPagedData();
 
         // otherwise print the whole table
         return (
@@ -88,14 +95,14 @@ class Movies extends React.Component {
                         selectedItem={this.state.selectedGenre} />
                 </div>
                 <div className='col'>
-                    <p>There are {filtered.length} movies in the database.</p>
+                    <p>There are {totalCount} movies in the database.</p>
                     <MoviesTable movies={movies}
                         onDelete={this.handleMovieDelete}
                         onLike={this.handleLike}
                         onSort={this.handleSort}
                         sortColumn={this.state.sortColumn} />
 
-                    <Pagination itemsCount={filtered.length}
+                    <Pagination itemsCount={totalCount}
                         pageSize={this.state.pageSize}
                         onPageChange={this.handlePageChange}
                         currentPage={this.state.currentPage} />
