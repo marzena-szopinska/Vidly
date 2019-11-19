@@ -10,8 +10,8 @@ class Movie extends Component {
     render() {
         return (
             <div>
-                <h1> Movie From - id  </h1>
-                <button className='btn btn-small' onClick={this.handleSave}>Save</button>
+                <h1> Movie From - {this.props.match.params.id}  </h1>
+                <button className='btn btn-small m-2' onClick={this.handleSave}>Save</button>
             </div>
         );
     }

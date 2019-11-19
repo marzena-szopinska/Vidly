@@ -17,10 +17,10 @@ function App() {
       <br />
       <br />
       <Switch>
+        <Route path='/movies/:id' component={Movie} />
         <Route path='/movies' component={Movies} />
         <Route path='/customers' component={Customers} />
         <Route path='/rentals' component={Rentals} />
-        <Route path='/movie' component={Movie} />
         <Route path='/not-found' compoment={NotFound} />
         <Redirect from='/' to='/movies' />
         <Redirect to='/not-found' />
