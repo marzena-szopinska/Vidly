@@ -1,7 +1,7 @@
 import React from 'react';
 import Input from './input';
 
-class Login extends React.Component {
+class LoginForm extends React.Component {
     state = {
         account: { username: '', password: '' },
         errors: {} // all errors will be stored here
@@ -25,7 +25,7 @@ class Login extends React.Component {
         e.preventDefault();
         // check for errors
         const errors = this.validate();
-        this.setState({ errors });
+        this.setState({ errors: errors || {} });
         console.log(errors);
         if (errors) return;
 
@@ -51,8 +51,8 @@ class Login extends React.Component {
                 <h1>Login</h1>
                 <br />
                 <form onSubmit={this.handleSubmit}>
-                    <Input name='username' value={account.username} label='Username:' onChange={this.handleChange} />
-                    <Input name='password' value={account.password} label='Password:' onChange={this.handleChange} />
+                    <Input error={this.state.errors.username} name='username' value={account.username} label='Username:' onChange={this.handleChange} />
+                    <Input error={this.state.errors.password} name='password' value={account.password} label='Password:' onChange={this.handleChange} />
                     <button className='btn btn-primary'>Login</button>
 
                 </form>
@@ -64,4 +64,4 @@ class Login extends React.Component {
 
 }
 
-export default Login;
+export default LoginForm;
